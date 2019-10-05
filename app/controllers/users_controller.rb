@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update]
-  before_action :logged_in_user, only: [:index, :show, :edit, :update]
+  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :logged_in_user, only: [:index, :show, :edit, :update, :destroy]
   before_action :correct_user, only: [:edit, :update]
+  before_action :admin_user, only: :destroy
   
   def index
     @users = User.paginate(page: params[:page])
@@ -39,6 +40,13 @@ class UsersController < ApplicationController
     end
   end
   
+  def destroy
+    if @user.destroy
+      flash[:success] = "#{@user.name}のデータを削除しました。"
+      redirect_to users_url
+    end
+  end
+  
   private
   
     def user_params
@@ -66,6 +74,12 @@ class UsersController < ApplicationController
       # unless @user == current_userと同じ↓↓
       unless current_user?(@user)
       redirect_to(root_url) 
+      end
+    end
+    
+    def admin_user
+      unless current_user.admin?
+      redirect_to root_url
       end
     end
 end
